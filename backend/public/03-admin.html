@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>⚙️ 後台管理</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pri:#1e5c38;--pri-l:#2d8a4e;--pri-bg:#d8f3dc;--pri-pale:#f0fdf4;
+  --amber:#d97706;--amber-bg:#fef3c7;
+  --red:#dc2626;--red-bg:#fee2e2;
+  --blue:#2563eb;--blue-bg:#dbeafe;
+  --g50:#f8fafc;--g100:#f1f5f9;--g200:#e2e8f0;--g300:#cbd5e1;
+  --g400:#94a3b8;--g500:#64748b;--g600:#475569;--g700:#334155;--g800:#1e293b;--g900:#0f172a;
+  --sidebar:210px;--radius:12px;--shadow:0 2px 8px rgba(0,0,0,.08);
+}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--g100);color:var(--g800);min-height:100vh}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e5c38 0%,#2d8a4e 100%)}
+.login-card{background:#fff;border-radius:16px;padding:36px 32px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.login-logo{text-align:center;font-size:38px;margin-bottom:8px}
+.login-title{text-align:center;font-size:18px;font-weight:700;color:var(--g800);margin-bottom:4px}
+.login-sub{text-align:center;font-size:13px;color:var(--g500);margin-bottom:24px}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar);background:var(--g900);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:50;display:flex;flex-direction:column}
+.sb-logo{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:9px}
+.sb-logo-icon{font-size:22px}
+.sb-logo-text{font-size:14px;font-weight:700;color:#fff}
+.sb-logo-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:1px}
+.sb-section{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.sb-label{font-size:10px;color:rgba(255,255,255,.35);padding:8px 16px 4px;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.sb-item{display:flex;align-items:center;gap:8px;padding:10px 16px;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:inherit;transition:all .15s;font-weight:500}
+.sb-item:hover{color:#fff;background:rgba(255,255,255,.07)}
+.sb-item.on{color:#fff;background:var(--pri-l);font-weight:700}
+.sb-item .si{font-size:16px;flex-shrink:0}
+.sb-bottom{margin-top:auto;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-user{font-size:11px;color:rgba(255,255,255,.4);padding:4px 8px;line-height:1.6}
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid var(--g200);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.tb-title{font-size:15px;font-weight:700;color:var(--g800)}
+.tb-links{display:flex;gap:8px}
+.tb-link{padding:6px 12px;border-radius:20px;font-size:13px;font-weight:500;background:var(--pri-bg);color:var(--pri);border:none;cursor:pointer;font-family:inherit;text-decoration:none;display:flex;align-items:center;gap:4px}
+.tb-link:hover{background:var(--pri-l);color:#fff}
+.content{padding:24px;flex:1}
+.sec{display:none}
+.sec.on{display:block}
+.page-title{font-size:20px;font-weight:700;color:var(--g800);margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--g500);margin-bottom:20px}
+.card{background:#fff;border-radius:var(--radius);border:1px solid var(--g200);box-shadow:var(--shadow);margin-bottom:16px}
+.card-hd{padding:14px 18px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-title{font-size:14px;font-weight:700;color:var(--g800)}
+.card-bd{padding:16px 18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:#fff;border-radius:var(--radius);border:1px solid var(--g200);padding:14px 16px;text-align:center;box-shadow:var(--shadow)}
+.stat-lbl{font-size:12px;color:var(--g500);margin-bottom:4px;font-weight:500}
+.stat-val{font-size:26px;font-weight:700}
+.c-g{color:var(--pri-l)}.c-r{color:var(--red)}.c-a{color:var(--amber)}
+.fl{display:flex;flex-direction:column;gap:11px}
+.lbl{font-size:12px;color:var(--g600);font-weight:500;margin-bottom:4px}
+.fc{width:100%;padding:9px 12px;border:1.5px solid var(--g200);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:var(--g800);outline:none;appearance:none;-webkit-appearance:none;transition:border-color .18s}
+.fc:focus{border-color:var(--pri-l)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.row5{display:grid;grid-template-columns:100px 1fr 1fr 1fr 1fr 80px;gap:8px;align-items:end}
+@media(max-width:900px){.row5{grid-template-columns:1fr 1fr}}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{background:var(--g50);padding:10px 12px;text-align:left;font-weight:600;color:var(--g600);border-bottom:2px solid var(--g200);white-space:nowrap}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--g100);vertical-align:middle}
+.tbl tr:hover td{background:var(--g50)}
+.tbl-wrap{overflow-x:auto}
+.no-data{text-align:center;color:var(--g400);padding:28px;font-size:13px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn-g{background:var(--pri-l);color:#fff}.btn-g:hover{background:var(--pri)}
+.btn-r{background:var(--red);color:#fff}.btn-r:hover{background:#b91c1c}
+.btn-o{background:var(--g100);color:var(--g700);border:1px solid var(--g200)}.btn-o:hover{background:var(--g200)}
+.btn-exp{background:#0f766e;color:#fff}.btn-exp:hover{background:#0c5e57}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#1d4ed8}
+.btn-full{width:100%;justify-content:center}
+.btn-login{width:100%;justify-content:center;padding:13px;font-size:15px;background:var(--pri-l);color:#fff;border-radius:10px;border:none;font-family:inherit;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-login:hover{background:var(--pri)}
+.acts{display:flex;gap:6px}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700}
+.bdg-g{background:var(--pri-bg);color:var(--pri)}.bdg-r{background:var(--red-bg);color:var(--red)}
+.bdg-a{background:var(--amber-bg);color:var(--amber)}.bdg-b{background:var(--blue-bg);color:var(--blue)}
+.import-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:1.5px dashed var(--g300);background:#fff;color:var(--g600);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.import-btn:hover{border-color:var(--pri-l);color:var(--pri)}
+.al{padding:11px 14px;border-radius:9px;font-size:13px;line-height:1.6;display:flex;gap:8px;margin-bottom:12px}
+.al-r{background:var(--red-bg);border:1px solid #fca5a5;color:#7f1d1d}
+.al-g{background:var(--pri-bg);border:1px solid #86efac;color:#14532d}
+#toast{position:fixed;bottom:20px;right:20px;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;z-index:9999;opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.tg{background:var(--pri-l)}#toast.tr{background:var(--red)}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- LOGIN -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">🍱</div>
+    <div class="login-title">後台管理系統</div>
+    <div class="login-sub">實習生訂餐系統 — 管理員專用</div>
+    <div class="fl">
+      <div>
+        <div class="lbl">員編</div>
+        <input class="fc" id="adm-emp" placeholder="例：Y00780" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')$('adm-pwd').focus()">
+      </div>
+      <div>
+        <div class="lbl">密碼（預設為 000）</div>
+        <input class="fc" type="password" id="adm-pwd" onkeydown="if(event.key==='Enter')doAdminLogin()">
+      </div>
+      <div id="login-err"></div>
+      <button class="btn-login" onclick="doAdminLogin()">登入後台 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div id="admin-layout" class="layout" style="display:none">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">🍱</div>
+      <div>
+        <div class="sb-logo-text">訂餐後台</div>
+        <div class="sb-logo-sub">管理系統</div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">數據</div>
+      <button class="sb-item on" data-sec="sec-orders" onclick="showSec(this)"><span class="si">📋</span>訂餐統計</button>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">設定</div>
+      <button class="sb-item" data-sec="sec-menu" onclick="showSec(this)"><span class="si">📝</span>菜單管理</button>
+      <button class="sb-item" data-sec="sec-staff" onclick="showSec(this)"><span class="si">👥</span>人員名單</button>
+      <button class="sb-item" data-sec="sec-admins" onclick="showSec(this)"><span class="si">🔐</span>管理員設定</button>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-user" id="sb-user-info">—</div>
+      <button class="sb-item" onclick="doLogout()" style="color:rgba(255,255,255,.45)"><span class="si">←</span>登出</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-title" id="topbar-section-title">📋 訂餐統計</div>
+      <div class="tb-links">
+        <a class="tb-link" href="01-order.html">🍱 訂餐</a>
+        <a class="tb-link" href="02-pickup.html">🧺 取餐</a>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- ORDERS -->
+      <div id="sec-orders" class="sec on">
+        <div class="page-title">📋 訂餐統計</div>
+        <div class="page-sub">查詢訂單明細與份數彙總</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+          <input type="date" class="fc" id="ord-date" style="width:auto" onchange="renderOrders()">
+          <button class="btn btn-exp" onclick="exportOrders()">📥 匯出 CSV</button>
+          <button class="btn btn-o" onclick="window.print()">🖨️ 列印</button>
+        </div>
+        <div class="stats" id="ord-stats"></div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title">份數彙總</div></div>
+          <div class="card-bd" style="padding:0"><div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>餐別組合</th><th style="text-align:center">訂購</th><th style="text-align:center">已領</th><th style="text-align:center">未領</th></tr></thead>
+              <tbody id="sum-tbody"></tbody>
+            </table>
+          </div></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title">訂單明細</div></div>
+          <div class="card-bd" style="padding:0"><div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>員編</th><th>姓名</th><th>部門</th><th>日期</th><th>餐別</th><th>地點</th><th>主食</th><th>飯種</th><th>份數</th><th>狀態</th><th>操作</th></tr></thead>
+              <tbody id="ord-tbody"></tbody>
+            </table>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- MENU -->
+      <div id="sec-menu" class="sec">
+        <div class="page-title">📝 菜單管理</div>
+        <div class="page-sub">輸入每週供餐菜色，存入後學生端即可選擇</div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title">新增菜單（單筆）</div>
+            <div style="display:flex;gap:8px">
+              <label class="import-btn">📂 匯入 CSV<input type="file" accept=".csv" style="display:none" onchange="importMenuCSV(this)"></label>
+              <button class="btn btn-blue" onclick="saveImportedMenus()">🔄 執行菜單更新</button>
+            </div>
+          </div>
+          <div class="card-bd">
+            <div class="row5">
+              <div><div class="lbl">日期</div><input class="fc" type="date" id="m-date"></div>
+              <div><div class="lbl">主菜一（限80份）</div><input class="fc" id="m-m1" placeholder="例：椒鹽豬柳"></div>
+              <div><div class="lbl">主菜二</div><input class="fc" id="m-m2" placeholder="例：酒釀雞腿"></div>
+              <div><div class="lbl">素食</div><input class="fc" id="m-veg" placeholder="例：紅燒豆皮結"></div>
+              <div><div class="lbl">晚餐</div><input class="fc" id="m-din" placeholder="例：栗子燒肉"></div>
+              <div><button class="btn btn-g btn-full" onclick="addMenu()">新增</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title">菜單列表</div>
+            <button class="btn btn-r" onclick="clearAllMenus()">🗑️ 全部刪除</button>
+          </div>
+          <div class="card-bd" style="padding:0"><div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>日期</th><th>主菜一（限80份）</th><th>主菜二</th><th>素食</th><th>晚餐</th><th>操作</th></tr></thead>
+              <tbody id="menu-tbody"></tbody>
+            </table>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- STAFF -->
+      <div id="sec-staff" class="sec">
+        <div class="page-title">👥 人員名單</div>
+        <div class="page-sub">管理實習學生員編、部門、姓名</div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title">新增人員</div>
+            <label class="import-btn">📂 匯入 CSV<input type="file" accept=".csv" style="display:none" onchange="importStaffCSV(this)"></label>
+          </div>
+          <div class="card-bd">
+            <div class="row3">
+              <div><div class="lbl">員編</div><input class="fc" id="s-emp" placeholder="V08XXX" oninput="this.value=this.value.toUpperCase()"></div>
+              <div><div class="lbl">部門</div><input class="fc" id="s-dept" placeholder="例：骨科部"></div>
+              <div><div class="lbl">姓名</div><input class="fc" id="s-name" placeholder="姓名"></div>
+            </div>
+            <button class="btn btn-g" style="margin-top:10px" onclick="addStaff()">新增人員</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title">人員列表</div>
+            <span class="badge bdg-a" id="staff-count"></span>
+          </div>
+          <div class="card-bd" style="padding:0"><div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>員編</th><th>部門</th><th>姓名</th><th>操作</th></tr></thead>
+              <tbody id="staff-tbody"></tbody>
+            </table>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- ADMINS -->
+      <div id="sec-admins" class="sec">
+        <div class="page-title">🔐 管理員設定</div>
+        <div class="page-sub">設定可登入後台的人員名冊，密碼預設為 000</div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title">新增管理員</div></div>
+          <div class="card-bd">
+            <div class="row2">
+              <div><div class="lbl">員編</div><input class="fc" id="a-emp" placeholder="Y00780" oninput="this.value=this.value.toUpperCase()"></div>
+              <div><div class="lbl">姓名</div><input class="fc" id="a-name" placeholder="姓名"></div>
+            </div>
+            <div class="row2" style="margin-top:10px">
+              <div><div class="lbl">部門</div><input class="fc" id="a-dept" placeholder="部門"></div>
+              <div><div class="lbl">角色</div>
+                <select class="fc" id="a-role">
+                  <option value="super">程式管理員</option>
+                  <option value="menu">菜單管理員</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-g" style="margin-top:10px" onclick="addAdmin()">新增管理員</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title">管理員名冊</div></div>
+          <div class="card-bd" style="padding:0"><div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>員編</th><th>部門</th><th>姓名</th><th>角色</th><th>操作</th></tr></thead>
+              <tbody id="admins-tbody"></tbody>
+            </table>
+          </div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── API helper ── */
+async function apiFetch(method, path, body) {
+  const headers = {'Content-Type': 'application/json'};
+  const tok = sessionStorage.getItem('admin_token');
+  if (tok) headers['Authorization'] = 'Bearer ' + tok;
+  const res = await fetch(path, {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw Object.assign(new Error(data.error || res.statusText), {status: res.status});
+  return data;
+}
+
+/* ── State ── */
+let loggedAdmin    = null;
+let importedMenus  = null;
+let DB             = {menus: {}, orders: {}, staff: {}, admins: {}};
+
+const $ = id => document.getElementById(id);
+function dishLbl(d){return{main1:'主菜一',main2:'主菜二',veg:'素食',dinner:'晚餐'}[d]||d}
+function riceLbl(r){return r==='white'?'白飯':'養生飯'}
+function locLbl(l){return l==='douliou'?'斗六院區':'虎尾院區'}
+function fmtD(d){return d?d.replace(/-/g,'/'):''}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function toast(msg, cls='tg'){
+  const el=$('toast'); el.textContent=msg; el.className='show '+cls;
+  clearTimeout(el._t); el._t=setTimeout(()=>el.className='',2600);
+}
+function setErr(id, msg){
+  const el=$(id); if(!el) return;
+  el.innerHTML = msg ? `<div class="al al-r">${msg}</div>` : '';
+}
+
+/* ── Auth ── */
+async function doAdminLogin(){
+  const emp = $('adm-emp').value.trim().toUpperCase();
+  const pwd = $('adm-pwd').value.trim();
+  setErr('login-err', '');
+  try {
+    const res = await apiFetch('POST', '/api/auth/admin-login', {emp, password: pwd});
+    sessionStorage.setItem('admin_token', res.token);
+    loggedAdmin = res.user;
+    $('login-screen').style.display = 'none';
+    $('admin-layout').style.display = 'flex';
+    $('sb-user-info').innerHTML = `${loggedAdmin.name}<br>${loggedAdmin.emp}`;
+    $('ord-date').value = todayStr();
+    renderAll();
+    toast(`歡迎，${loggedAdmin.name}！`);
+  } catch(e) {
+    setErr('login-err', e.message);
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('admin_token');
+  loggedAdmin = null;
+  $('login-screen').style.display = 'flex';
+  $('admin-layout').style.display = 'none';
+  $('adm-emp').value = ''; $('adm-pwd').value = '';
+  setErr('login-err', '');
+}
+
+/* ── Section nav ── */
+function showSec(btn){
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const secId = btn.dataset.sec;
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  $(secId).classList.add('on');
+  const titles = {
+    'sec-orders':'📋 訂餐統計','sec-menu':'📝 菜單管理',
+    'sec-staff':'👥 人員名單','sec-admins':'🔐 管理員設定',
+  };
+  $('topbar-section-title').textContent = titles[secId] || '';
+}
+
+/* ── Render all ── */
+async function renderAll(){
+  if(!loggedAdmin) return;
+  await Promise.all([renderOrders(), renderMenuTable(), renderStaffTable(), renderAdminsTable()]);
+}
+
+/* ── ORDERS ── */
+async function renderOrders(){
+  const dateStr = $('ord-date').value || todayStr();
+  try {
+    const ords = await apiFetch('GET', `/api/orders?date=${dateStr}`);
+    DB.orders = {};
+    ords.forEach(o => { DB.orders[o.id] = {...o, mealType: o.meal_type}; });
+  } catch { DB.orders = {}; }
+
+  const ords   = Object.values(DB.orders);
+  const total  = ords.reduce((s,o)=>s+o.qty,0);
+  const done   = ords.filter(o=>o.status==='done').reduce((s,o)=>s+o.qty,0);
+  const people = new Set(ords.map(o=>o.emp)).size;
+  const menu   = DB.menus[dateStr];
+
+  $('ord-stats').innerHTML=`
+    <div class="stat"><div class="stat-lbl">總訂份數</div><div class="stat-val">${total}</div></div>
+    <div class="stat"><div class="stat-lbl">已領取</div><div class="stat-val c-g">${done}</div></div>
+    <div class="stat"><div class="stat-lbl">未領取</div><div class="stat-val c-r">${total-done}</div></div>
+    <div class="stat"><div class="stat-lbl">訂餐人數</div><div class="stat-val c-a">${people}</div></div>`;
+
+  const COMBOS=[
+    {k:'main1-white',l:'主菜一 ＋ 白飯'},{k:'main1-health',l:'主菜一 ＋ 養生飯'},
+    {k:'main2-white',l:'主菜二 ＋ 白飯'},{k:'main2-health',l:'主菜二 ＋ 養生飯'},
+    {k:'veg-white',l:'素食 ＋ 白飯'},{k:'veg-health',l:'素食 ＋ 養生飯'},
+    {k:'dinner-white',l:'晚餐 ＋ 白飯'},{k:'dinner-health',l:'晚餐 ＋ 養生飯'},
+  ];
+  let sb='';
+  COMBOS.forEach(c=>{
+    const [d,r]=c.k.split('-');
+    const rows=ords.filter(o=>o.dish===d&&o.rice===r);
+    const t=rows.reduce((s,o)=>s+o.qty,0); if(!t) return;
+    const dn=rows.filter(o=>o.status==='done').reduce((s,o)=>s+o.qty,0);
+    sb+=`<tr><td>${c.l}</td><td style="text-align:center">${t}</td>
+      <td style="text-align:center;color:var(--pri-l);font-weight:600">${dn}</td>
+      <td style="text-align:center;color:${t-dn>0?'var(--red)':'inherit'};font-weight:${t-dn>0?'700':'400'}">${t-dn}</td></tr>`;
+  });
+  $('sum-tbody').innerHTML = sb || '<tr><td colspan="4" class="no-data">此日期無訂單</td></tr>';
+
+  let ob='';
+  ords.forEach(o=>{
+    const mname = menu ? menu[o.dish] || o.dish : o.dish;
+    ob+=`<tr>
+      <td>${o.emp}</td><td>${o.name}</td><td>${o.dept}</td>
+      <td>${fmtD(o.date)}</td>
+      <td>${o.mealType==='lunch'?'午餐':'晚餐'}</td>
+      <td>${locLbl(o.loc)}</td>
+      <td>${dishLbl(o.dish)}</td>
+      <td>${riceLbl(o.rice)}</td>
+      <td style="text-align:center">${o.qty}</td>
+      <td><span class="badge ${o.status==='done'?'bdg-g':'bdg-a'}">${o.status==='done'?'已領取':'待領取'}</span></td>
+      <td><div class="acts">
+        <button class="btn ${o.status==='done'?'btn-o':'btn-g'}" onclick="toggleOrdStatus('${o.id}','${o.status}')">
+          ${o.status==='done'?'取消':'標記領取'}
+        </button>
+        <button class="btn btn-r" onclick="delOrder('${o.id}')">刪</button>
+      </div></td>
+    </tr>`;
+  });
+  $('ord-tbody').innerHTML = ob || '<tr><td colspan="11" class="no-data">此日期無訂單</td></tr>';
+}
+
+async function toggleOrdStatus(id, currentStatus){
+  try {
+    const next = currentStatus === 'done' ? 'pending' : 'done';
+    await apiFetch('PATCH', `/api/orders/${id}/status`, {status: next});
+    toast('狀態已更新');
+    renderOrders();
+  } catch(e) { toast(e.message, 'tr'); }
+}
+
+async function delOrder(id){
+  if(!confirm('確定刪除此筆訂單？')) return;
+  try {
+    await apiFetch('DELETE', `/api/orders/${id}`);
+    toast('已刪除');
+    renderOrders();
+  } catch(e) { toast(e.message, 'tr'); }
+}
+
+function exportOrders(){
+  const dateStr = $('ord-date').value || todayStr();
+  const ords    = Object.values(DB.orders);
+  const menu    = DB.menus[dateStr];
+  const rows    = [['員編','姓名','部門','日期','餐別','地點','主食','菜名','飯種','份數','狀態']];
+  ords.forEach(o=>{
+    rows.push([o.emp,o.name,o.dept,o.date,
+      o.mealType==='lunch'?'午餐':'晚餐',locLbl(o.loc),
+      dishLbl(o.dish),menu?menu[o.dish]||o.dish:o.dish,
+      riceLbl(o.rice),o.qty,o.status==='done'?'已領取':'待領取']);
+  });
+  const csv  = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `訂餐統計_${dateStr}.csv`;
+  a.click();
+  toast('已匯出 CSV！');
+}
+
+/* ── MENUS ── */
+async function renderMenuTable(){
+  try {
+    const menus = await apiFetch('GET', '/api/menus');
+    DB.menus = {};
+    menus.forEach(m => {
+      DB.menus[m.date] = {main1:m.main1, main2:m.main2, veg:m.veg, dinner:m.dinner,
+        main1Limit:m.main1_limit, holiday:m.holiday};
+    });
+  } catch { DB.menus = {}; }
+
+  const keys = Object.keys(DB.menus).sort();
+  if(!keys.length){ $('menu-tbody').innerHTML='<tr><td colspan="6" class="no-data">尚無菜單</td></tr>'; return; }
+  $('menu-tbody').innerHTML = keys.map(d => {
+    const m = DB.menus[d];
+    return `<tr>
+      <td>${fmtD(d)}</td><td>${m.main1||'—'}</td><td>${m.main2||'—'}</td>
+      <td>${m.veg||'—'}</td><td>${m.dinner||'—'}</td>
+      <td><button class="btn btn-r" onclick="delMenu('${d}')">刪除</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function addMenu(){
+  const date = $('m-date').value;
+  const m1   = $('m-m1').value.trim(), m2 = $('m-m2').value.trim();
+  const veg  = $('m-veg').value.trim(), din = $('m-din').value.trim();
+  if(!date||!m1||!m2||!veg){ toast('請填寫日期及主菜一、主菜二、素食','tr'); return; }
+  try {
+    await apiFetch('POST', '/api/menus', {date, main1:m1, main2:m2, veg, dinner:din, main1Limit:80});
+    toast('菜單新增成功');
+    ['m-date','m-m1','m-m2','m-veg','m-din'].forEach(id=>{const el=$(id);if(el)el.value='';});
+    renderMenuTable();
+  } catch(e) { toast(e.message, 'tr'); }
+}
+
+async function delMenu(date){
+  if(!confirm('確定刪除 '+fmtD(date)+' 的菜單？')) return;
+  try {
+    await apiFetch('DELETE', `/api/menus/${date}`);
+    toast('已刪除'); renderMenuTable();
+  } catch(e) { toast(e.message, 'tr'); }
+}
+
+async function clearAllMenus(){
+  if(!confirm('確定刪除全部菜單？此操作無法復原')) return;
+  try {
+    await apiFetch('DELETE', '/api/menus/all');
+    toast('已清空菜單'); renderMenuTable();
+  } catch(e) { toast(e.message, 'tr'); }
+}
+
+function importMenuCSV(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split('\n').map(l=>l.trim()).filter(Boolean);
+    importedMenus = [];
+    lines.slice(1).forEach(line=>{
+      const cols = line.split(',').map(c=>c.replace(/^"|"$/g,'').trim());
+      if(cols.length < 4) return;
+      const [date,m1,m2,veg,...rest] = cols;
+      const dinner = rest[0] || '';
+      if(!date || date==='日期') return;
+      importedMenus.push({date:date.replace(/\//g,'-'), main1:m1, main2:m2, veg, dinner, main1Limit:80});
+    });
+    toast(`已讀取 ${importedMenus.length} 筆，請點「執行菜單更新」`);
+  };
+  reader.readAsText(file, 'UTF-8');
+  input.value = '';
+}
+
+async function saveImportedMenus(){
+  if(!importedMenus || !importedMenus.length){ toast('請先匯入 CSV 檔案','tr'); return; }
+  try {
+    const res = await apiFetch('POST', '/api/menus/import', {rows: importedMenus});
+    toast(`已更新 ${res.inserted} 筆菜單`);
+    importedMenus = null; renderMenuTable();
+  } catch(e) { toast(e.message, 'tr'); }
+}
+
+/* ── STAFF ── */
+async function renderStaffTable(){
+  try {
+    const staff = await apiFetch('GET', '/api/staff');
+    DB.staff = {};
+    staff.forEach(s => { DB.staff[s.emp] = s; });
+  } catch { DB.staff = {}; }
+
+  const keys = Object.keys(DB.staff);
+  $('staff-count').textContent = keys.length + ' 人';
+  if(!keys.length){ $('staff-tbody').innerHTML='<tr><td colspan="4" class="no-data">尚無人員</td></tr>'; return; }
+  $('staff-tbody').innerHTML = keys.sort().map(emp => {
+    const s = DB.staff[emp];
+    return `<tr><td>${s.emp}</td><td>${s.dept}</td><td>${s.name}</td>
+      <td><button class="btn btn-r" onclick="delStaff('${emp}')">刪除</button></td></tr>`;
+  }).join('');
+}
+
+async function addStaff(){
+  const emp  = $('s-emp').value.trim().toUpperCase();
+  const dept = $('s-dept').value.trim(), name = $('s-name').value.trim();
+  if(!emp||!name){ toast('請填寫員編及姓名','tr'); return; }
+  try {
+    await apiFetch('POST', '/api/staff', {emp, dept, name});
+    toast('人員新增成功');
+    ['s-emp','s-dept','s-name'].forEach(id=>{const el=$(id);if(el)el.value='';});
+    renderStaffTable();
+  } catch(e) { toast(e.message, 'tr'); }
+}
+
+async function delStaff(emp){
+  if(!confirm(`確定刪除人員 ${emp}？`)) return;
+  try {
+    await apiFetch('DELETE', `/api/staff/${emp}`);
+    toast('已刪除'); renderStaffTable();
+  } catch(e) { toast(e.message, 'tr'); }
+}
+
+function importStaffCSV(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const lines = e.target.result.split('\n').map(l=>l.trim()).filter(Boolean);
+    const rows = [];
+    lines.slice(1).forEach(line=>{
+      const cols = line.split(',').map(c=>c.replace(/^"|"$/g,'').trim());
+      if(cols.length < 3) return;
+      const [emp,dept,name] = cols;
+      if(!emp || emp==='員編') return;
+      rows.push({emp:emp.toUpperCase(), dept, name});
+    });
+    if(!rows.length){ toast('未讀取到任何資料','tr'); return; }
+    try {
+      const res = await apiFetch('POST', '/api/staff/import', {rows});
+      toast(`已匯入 ${res.inserted} 筆人員資料`);
+      renderStaffTable();
+    } catch(e) { toast(e.message, 'tr'); }
+  };
+  reader.readAsText(file, 'UTF-8');
+  input.value = '';
+}
+
+/* ── ADMINS ── */
+async function renderAdminsTable(){
+  try {
+    const admins = await apiFetch('GET', '/api/admins');
+    DB.admins = {};
+    admins.forEach(a => { DB.admins[a.emp] = a; });
+  } catch { DB.admins = {}; }
+
+  $('admins-tbody').innerHTML = Object.values(DB.admins).map(a=>`
+    <tr>
+      <td>${a.emp}</td><td>${a.dept}</td><td>${a.name}</td>
+      <td><span class="badge ${a.role==='super'?'bdg-b':'bdg-g'}">${a.role==='super'?'程式管理員':'菜單管理員'}</span></td>
+      <td><button class="btn btn-r" onclick="delAdmin('${a.emp}')" ${a.emp===loggedAdmin?.emp?'disabled':''}>刪除</button></td>
+    </tr>`).join('') || '<tr><td colspan="5" class="no-data">尚無管理員</td></tr>';
+}
+
+async function addAdmin(){
+  const emp  = $('a-emp').value.trim().toUpperCase();
+  const name = $('a-name').value.trim(), dept = $('a-dept').value.trim();
+  const role = $('a-role').value;
+  if(!emp||!name){ toast('請填寫員編及姓名','tr'); return; }
+  try {
+    await apiFetch('POST', '/api/admins', {emp, name, dept, role});
+    toast('管理員新增成功');
+    ['a-emp','a-name','a-dept'].forEach(id=>{const el=$(id);if(el)el.value='';});
+    renderAdminsTable();
+  } catch(e) { toast(e.message, 'tr'); }
+}
+
+async function delAdmin(emp){
+  if(!confirm('確定移除此管理員？')) return;
+  try {
+    await apiFetch('DELETE', `/api/admins/${emp}`);
+    toast('已移除'); renderAdminsTable();
+  } catch(e) { toast(e.message, 'tr'); }
+}
+
+/* ── Expose globals ── */
+window.doAdminLogin=doAdminLogin; window.doLogout=doLogout; window.showSec=showSec;
+window.renderOrders=renderOrders; window.toggleOrdStatus=toggleOrdStatus;
+window.delOrder=delOrder; window.exportOrders=exportOrders;
+window.addMenu=addMenu; window.delMenu=delMenu; window.clearAllMenus=clearAllMenus;
+window.importMenuCSV=importMenuCSV; window.saveImportedMenus=saveImportedMenus;
+window.addStaff=addStaff; window.delStaff=delStaff; window.importStaffCSV=importStaffCSV;
+window.addAdmin=addAdmin; window.delAdmin=delAdmin;
+</script>
+</body>
+</html>

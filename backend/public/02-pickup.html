@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧺 取餐管理</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#2d8a4e;--green-l:#52b788;--green-bg:#d8f3dc;--green-pale:#f0fdf4;
+  --amber:#d97706;--amber-bg:#fef3c7;
+  --red:#dc2626;--red-bg:#fee2e2;
+  --blue:#2563eb;--blue-bg:#dbeafe;
+  --g50:#f8fafc;--g100:#f1f5f9;--g200:#e2e8f0;--g300:#cbd5e1;
+  --g400:#94a3b8;--g500:#64748b;--g600:#475569;--g700:#334155;--g800:#1e293b;
+  --radius:12px;--shadow:0 2px 8px rgba(0,0,0,.08);
+}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--g100);color:var(--g800);min-height:100vh}
+.topbar{background:var(--green);color:#fff;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,80,0,.25)}
+.topbar-title{font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px}
+.topbar-time{font-size:12px;opacity:.85}
+.topbar-links{display:flex;gap:8px}
+.topbar-link{background:rgba(255,255,255,.18);border:none;color:#fff;padding:6px 12px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;text-decoration:none;display:flex;align-items:center;gap:4px}
+.topbar-link:hover{background:rgba(255,255,255,.28)}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px}
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--g200);margin-bottom:16px}
+.card-hd{padding:14px 18px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-title{font-size:15px;font-weight:700;color:var(--g800)}
+.card-bd{padding:16px 18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:#fff;border-radius:var(--radius);border:1px solid var(--g200);padding:14px 16px;text-align:center;box-shadow:var(--shadow)}
+.stat-lbl{font-size:12px;color:var(--g500);margin-bottom:4px;font-weight:500}
+.stat-val{font-size:26px;font-weight:700}
+.c-green{color:var(--green)}.c-red{color:var(--red)}.c-amber{color:var(--amber)}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{background:var(--green);color:#fff;padding:10px 14px;font-weight:500;font-size:13px;text-align:center;white-space:nowrap}
+.tbl th:first-child{text-align:left}
+.tbl td{padding:9px 14px;text-align:center;border-bottom:1px solid var(--g100)}
+.tbl td:first-child{text-align:left;font-weight:500}
+.tbl tr:hover td{background:var(--g50)}
+.tbl .rem{color:var(--red);font-weight:700}
+.tbl .done{color:var(--green-l);font-weight:600}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--g200);margin-bottom:16px}
+.filter-bar label{font-size:13px;color:var(--g500);font-weight:500}
+select.fc{padding:7px 10px;border:1px solid var(--g300);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;color:var(--g700);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;min-width:110px}
+select.fc:focus{border-color:var(--green-l)}
+.dept-block{margin-bottom:20px}
+.dept-head{font-size:14px;font-weight:700;color:var(--g700);padding:8px 12px;background:var(--g100);border-radius:8px;margin-bottom:10px;border-left:4px solid var(--green-l);display:flex;align-items:center;gap:6px}
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.sc{background:#fff;border:2px solid var(--g200);border-radius:var(--radius);padding:14px;cursor:pointer;transition:all .18s}
+.sc:hover:not(.sc-done){border-color:var(--green-l);box-shadow:0 4px 12px rgba(45,138,78,.12);transform:translateY(-1px)}
+.sc-done{opacity:.42;border-color:var(--g200);order:99}
+.sc-name{font-size:14px;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.sc-emp{font-size:11px;background:var(--g100);color:var(--g500);padding:2px 6px;border-radius:4px;font-weight:600}
+.sc-dept{font-size:12px;color:var(--g400);margin-bottom:8px}
+.sc-meals{font-size:12px;color:var(--g600);line-height:1.85}
+.sc-btn{margin-top:10px;padding:8px 0;width:100%;border:none;border-radius:8px;background:var(--green-bg);color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.sc-btn:hover:not(:disabled){background:var(--green-l);color:#fff}
+.sc-btn:disabled{background:var(--g100);color:var(--g400);cursor:not-allowed}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:#236640}
+.btn-o{background:var(--g100);color:var(--g700);border:1px solid var(--g300)}.btn-o:hover{background:var(--g200)}
+.btn-export{background:#0f766e;color:#fff}.btn-export:hover{background:#0c5e57}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+#toast{position:fixed;bottom:20px;right:20px;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;z-index:9999;opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.tg{background:var(--green)}
+#toast.tr{background:var(--red)}
+.no-data{text-align:center;color:var(--g400);padding:32px;font-size:14px}
+.tbl-wrap{overflow-x:auto}
+.refresh-hint{font-size:12px;color:var(--g400);margin-left:8px}
+
+/* ── 取餐頁登入 overlay ── */
+.pickup-gate{position:fixed;inset:0;background:linear-gradient(135deg,#1e5c38 0%,#2d8a4e 100%);display:flex;align-items:center;justify-content:center;z-index:200}
+.pickup-gate-card{background:#fff;border-radius:16px;padding:32px 28px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.pickup-gate-logo{text-align:center;font-size:36px;margin-bottom:6px}
+.pickup-gate-title{text-align:center;font-size:17px;font-weight:700;color:var(--g800);margin-bottom:4px}
+.pickup-gate-sub{text-align:center;font-size:12px;color:var(--g500);margin-bottom:20px}
+.pgi{display:block;width:100%;padding:10px 13px;border:1.5px solid var(--g300);border-radius:9px;font-size:14px;font-family:inherit;outline:none;margin-bottom:10px;color:var(--g800)}
+.pgi:focus{border-color:var(--green-l)}
+.pgbtn{width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px}
+.pgbtn:hover{background:#236640}
+#gate-err{font-size:12px;color:var(--red);min-height:18px;margin-bottom:6px}
+</style>
+</head>
+<body>
+
+<!-- 登入 overlay（無 token 時顯示）-->
+<div id="pickup-gate" class="pickup-gate" style="display:none">
+  <div class="pickup-gate-card">
+    <div class="pickup-gate-logo">🧺</div>
+    <div class="pickup-gate-title">取餐管理</div>
+    <div class="pickup-gate-sub">請以管理員身份登入</div>
+    <input class="pgi" id="gate-emp" placeholder="員編（例：Y00780）"
+      oninput="this.value=this.value.toUpperCase()"
+      onkeydown="if(event.key==='Enter')$('gate-pwd').focus()">
+    <input class="pgi" id="gate-pwd" type="password" placeholder="密碼（預設為 000）"
+      onkeydown="if(event.key==='Enter')doPickupLogin()">
+    <div id="gate-err"></div>
+    <button class="pgbtn" onclick="doPickupLogin()">登入 →</button>
+  </div>
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">🧺 取餐管理</div>
+    <div class="topbar-time" id="top-time">—</div>
+  </div>
+  <div class="topbar-links">
+    <a class="topbar-link" href="01-order.html">🍱 訂餐</a>
+    <a class="topbar-link" href="03-admin.html">⚙️ 後台</a>
+    <button class="topbar-link" onclick="doPickupLogout()">登出</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div class="wrap">
+  <div class="filter-bar">
+    <label>日期：</label>
+    <select class="fc" id="flt-date" onchange="render()"></select>
+    <label>部門：</label>
+    <select class="fc" id="flt-dept" onchange="render()"><option value="">全部</option></select>
+    <label>地點：</label>
+    <select class="fc" id="flt-loc" onchange="render()">
+      <option value="">全部</option>
+      <option value="douliou">斗六院區</option>
+      <option value="huwei">虎尾院區</option>
+    </select>
+    <label>狀態：</label>
+    <select class="fc" id="flt-status" onchange="render()">
+      <option value="">全部</option>
+      <option value="pending">待領取</option>
+      <option value="done">已領取</option>
+    </select>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-o" onclick="window.print()">🖨️ 列印</button>
+      <button class="btn btn-export" onclick="exportExcel()">📥 匯出 Excel</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats-row"></div>
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-title">📊 份數彙總 <span class="live-dot" style="margin-left:6px"></span><span class="refresh-hint">自動同步</span></div>
+    </div>
+    <div class="card-bd" style="padding:0">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>餐別組合</th><th>總訂數</th><th>已領取</th><th>未領取</th></tr></thead>
+          <tbody id="sum-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="cards-area"></div>
+</div>
+
+<script>
+/* ── API helper ── */
+async function apiFetch(method, path, body) {
+  const headers = {'Content-Type': 'application/json'};
+  const tok = sessionStorage.getItem('pickup_token');
+  if (tok) headers['Authorization'] = 'Bearer ' + tok;
+  const res = await fetch(path, {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw Object.assign(new Error(data.error || res.statusText), {status: res.status});
+  return data;
+}
+
+/* ── State ── */
+let DB = {menus: {}, orders: {}};
+let pollTimer = null;
+
+const $ = id => document.getElementById(id);
+function dishLbl(d){return{main1:'主菜一',main2:'主菜二',veg:'素食',dinner:'晚餐'}[d]||d}
+function riceLbl(r){return r==='white'?'白飯':'養生飯'}
+function locLbl(l){return l==='douliou'?'斗六院區':'虎尾院區'}
+function fmtD(d){return d?d.replace(/-/g,'/'):''}
+
+function toast(msg, cls='tg'){
+  const el=$('toast'); el.textContent=msg; el.className='show '+cls;
+  clearTimeout(el._t); el._t=setTimeout(()=>el.className='',2600);
+}
+
+/* ── Clock ── */
+function updateClock(){
+  const now=new Date();
+  $('top-time').textContent=now.toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit'});
+}
+setInterval(updateClock, 1000); updateClock();
+
+/* ── Auth ── */
+async function doPickupLogin(){
+  const emp = $('gate-emp').value.trim().toUpperCase();
+  const pwd = $('gate-pwd').value.trim();
+  $('gate-err').textContent = '';
+  try {
+    const res = await apiFetch('POST', '/api/auth/admin-login', {emp, password: pwd});
+    sessionStorage.setItem('pickup_token', res.token);
+    $('pickup-gate').style.display = 'none';
+    await loadDB();
+    startPolling();
+  } catch(e) {
+    $('gate-err').textContent = e.message;
+  }
+}
+
+function doPickupLogout(){
+  sessionStorage.removeItem('pickup_token');
+  stopPolling();
+  $('gate-emp').value = ''; $('gate-pwd').value = ''; $('gate-err').textContent = '';
+  $('pickup-gate').style.display = 'flex';
+}
+
+/* ── Data ── */
+async function loadDB(){
+  try {
+    const [menus, orders] = await Promise.all([
+      apiFetch('GET', '/api/menus'),
+      apiFetch('GET', '/api/orders?date=' + getSelectedDate()),
+    ]);
+    DB.menus = {};
+    menus.forEach(m => {
+      DB.menus[m.date] = {main1:m.main1, main2:m.main2, veg:m.veg, dinner:m.dinner,
+        main1Limit:m.main1_limit, holiday:m.holiday};
+    });
+    DB.orders = {};
+    orders.forEach(o => { DB.orders[o.id] = {...o, mealType: o.meal_type}; });
+    render();
+  } catch(e) {
+    if(e.status === 401) { doPickupLogout(); return; }
+    toast('載入失敗：' + e.message, 'tr');
+  }
+}
+
+async function loadOrders(){
+  try {
+    const orders = await apiFetch('GET', '/api/orders?date=' + getSelectedDate());
+    DB.orders = {};
+    orders.forEach(o => { DB.orders[o.id] = {...o, mealType: o.meal_type}; });
+    render();
+  } catch(e) {
+    if(e.status === 401) doPickupLogout();
+  }
+}
+
+function getSelectedDate(){
+  const sel = $('flt-date');
+  if(sel && sel.value) return sel.value;
+  const keys = Object.keys(DB.menus).sort().filter(d => !DB.menus[d].holiday);
+  return keys[0] || new Date().toISOString().slice(0,10);
+}
+
+/* ── Polling ── */
+function startPolling(){
+  stopPolling();
+  pollTimer = setInterval(loadOrders, 15000);
+}
+function stopPolling(){
+  if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+}
+
+/* ── Render ── */
+function populateDateDrop(){
+  const sel = $('flt-date'); if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '';
+  Object.keys(DB.menus).sort().forEach(d => {
+    const m = DB.menus[d];
+    if(m.holiday) return;
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = fmtD(d);
+    if(d === cur) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  if(!sel.value && sel.options.length) sel.value = sel.options[0].value;
+}
+
+function render(){
+  populateDateDrop();
+  const dateStr   = $('flt-date').value;
+  const deptFlt   = $('flt-dept').value;
+  const locFlt    = $('flt-loc').value;
+  const statusFlt = $('flt-status').value;
+
+  let ords = Object.values(DB.orders).filter(o => o.date === dateStr);
+
+  const depts = [...new Set(ords.map(o => o.dept))].sort();
+  const deptSel = $('flt-dept');
+  const prevDept = deptSel.value;
+  deptSel.innerHTML = '<option value="">全部</option>' +
+    depts.map(d=>`<option value="${d}" ${d===prevDept?'selected':''}>${d}</option>`).join('');
+
+  let filtered = [...ords];
+  if(deptFlt)   filtered = filtered.filter(o => o.dept === deptFlt);
+  if(locFlt)    filtered = filtered.filter(o => o.loc  === locFlt);
+  if(statusFlt) filtered = filtered.filter(o => o.status === statusFlt);
+
+  const total  = ords.reduce((s,o) => s+o.qty, 0);
+  const done   = ords.filter(o=>o.status==='done').reduce((s,o)=>s+o.qty,0);
+  const people = new Set(ords.map(o=>o.emp)).size;
+  $('stats-row').innerHTML=`
+    <div class="stat"><div class="stat-lbl">總訂份數</div><div class="stat-val">${total}</div></div>
+    <div class="stat"><div class="stat-lbl">已領取</div><div class="stat-val c-green">${done}</div></div>
+    <div class="stat"><div class="stat-lbl">未領取</div><div class="stat-val c-red">${total-done}</div></div>
+    <div class="stat"><div class="stat-lbl">訂餐人數</div><div class="stat-val c-amber">${people}</div></div>`;
+
+  const COMBOS=[
+    {k:'main1-white',l:'主菜一 ＋ 白飯'},{k:'main1-health',l:'主菜一 ＋ 養生飯'},
+    {k:'main2-white',l:'主菜二 ＋ 白飯'},{k:'main2-health',l:'主菜二 ＋ 養生飯'},
+    {k:'veg-white',l:'素食 ＋ 白飯'},{k:'veg-health',l:'素食 ＋ 養生飯'},
+    {k:'dinner-white',l:'晚餐 ＋ 白飯'},{k:'dinner-health',l:'晚餐 ＋ 養生飯'},
+  ];
+  let sb = '';
+  COMBOS.forEach(c => {
+    const [d,r] = c.k.split('-');
+    const rows  = ords.filter(o=>o.dish===d&&o.rice===r);
+    const t = rows.reduce((s,o)=>s+o.qty,0); if(!t) return;
+    const dn = rows.filter(o=>o.status==='done').reduce((s,o)=>s+o.qty,0);
+    sb += `<tr><td>${c.l}</td><td>${t}</td><td class="done">${dn}</td><td class="${t-dn>0?'rem':''}">${t-dn}</td></tr>`;
+  });
+  $('sum-tbody').innerHTML = sb || '<tr><td colspan="4" class="no-data">今日無訂單</td></tr>';
+
+  const byEmp = {};
+  filtered.forEach(o => {
+    if(!byEmp[o.emp]) byEmp[o.emp]={emp:o.emp,name:o.name,dept:o.dept,items:[]};
+    byEmp[o.emp].items.push(o);
+  });
+  const byDept = {};
+  Object.values(byEmp).forEach(u => {
+    if(!byDept[u.dept]) byDept[u.dept]=[];
+    byDept[u.dept].push(u);
+  });
+
+  let html = '';
+  if(!Object.keys(byDept).length) html = '<div class="no-data">⚠️ 無符合條件的訂單</div>';
+  Object.keys(byDept).sort().forEach(dept => {
+    html += `<div class="dept-block"><div class="dept-head">🏥 ${dept}</div><div class="staff-grid">`;
+    byDept[dept].sort((a,b)=>{
+      const ad=a.items.every(i=>i.status==='done');
+      const bd=b.items.every(i=>i.status==='done');
+      return ad===bd?0:ad?1:-1;
+    }).forEach(u => {
+      const allDone = u.items.every(i=>i.status==='done');
+      const merged  = {};
+      u.items.forEach(o => {
+        const k = o.dish+'-'+o.rice;
+        if(!merged[k]) merged[k]={lbl:dishLbl(o.dish),rice:riceLbl(o.rice),qty:0};
+        merged[k].qty += o.qty;
+      });
+      const mealLines = Object.values(merged).map(m=>`${m.lbl}（${m.rice}）× ${m.qty}`).join('<br>');
+      const locs = [...new Set(u.items.map(o=>locLbl(o.loc)))].join('、');
+      html += `
+      <div class="sc ${allDone?'sc-done':''}" id="sc-${u.emp}">
+        <div class="sc-name">${allDone?'✅':'🙋'} ${u.name} <span class="sc-emp">${u.emp}</span></div>
+        <div class="sc-dept">📍 ${locs}</div>
+        <div class="sc-meals">${mealLines}</div>
+        <button class="sc-btn" ${allDone?'disabled':''} onclick="markDone('${u.emp}','${dateStr}')">
+          ${allDone?'已領取':'確認取餐'}
+        </button>
+      </div>`;
+    });
+    html += '</div></div>';
+  });
+  $('cards-area').innerHTML = html;
+}
+
+/* ── Mark done ── */
+async function markDone(emp, dateStr){
+  try {
+    await apiFetch('PATCH', '/api/orders/mark-done-by-emp', {emp, date: dateStr});
+    toast('已標記取餐完成 ✅');
+    await loadOrders();
+  } catch(e) {
+    toast('更新失敗：' + e.message, 'tr');
+  }
+}
+
+/* ── Export ── */
+function exportExcel(){
+  const dateStr = $('flt-date').value;
+  const ords    = Object.values(DB.orders).filter(o=>o.date===dateStr);
+  const menu    = DB.menus[dateStr];
+  const rows    = [['員編','姓名','部門','日期','餐別','地點','主食','菜名','飯種','份數','狀態']];
+  ords.forEach(o => {
+    const mname = menu ? menu[o.dish] || o.dish : o.dish;
+    rows.push([o.emp,o.name,o.dept,o.date,
+      o.mealType==='lunch'?'午餐':'晚餐',locLbl(o.loc),
+      dishLbl(o.dish),mname,riceLbl(o.rice),o.qty,
+      o.status==='done'?'已領取':'待領取']);
+  });
+  const csv  = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `訂餐明細_${dateStr}.csv`;
+  a.click();
+  toast('已匯出 CSV！');
+}
+
+/* ── Boot ── */
+async function init(){
+  const tok = sessionStorage.getItem('pickup_token');
+  if(!tok){
+    $('pickup-gate').style.display = 'flex';
+    return;
+  }
+  // token 存在，先載入菜單（公開），確認 token 有效
+  try {
+    await loadDB();
+    startPolling();
+  } catch(e) {
+    $('pickup-gate').style.display = 'flex';
+  }
+}
+
+window.render=render; window.markDone=markDone; window.exportExcel=exportExcel;
+window.doPickupLogin=doPickupLogin; window.doPickupLogout=doPickupLogout;
+init();
+</script>
+</body>
+</html>

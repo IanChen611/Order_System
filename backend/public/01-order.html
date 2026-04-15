@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>🍱 實習生訂餐</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --green:#06C755;--green-d:#04a541;--green-bg:#e8f5e9;--green-pale:#f0fdf4;
+  --orange:#f97316;--red:#dc2626;--red-bg:#fee2e2;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-400:#9ca3af;
+  --gray-600:#4b5563;--gray-800:#1f2937;
+  --radius:12px;--shadow:0 2px 10px rgba(0,0,0,.10);
+}
+body{font-family:'Noto Sans TC',sans-serif;background:#b9dfc0;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+.shell{width:100%;max-width:430px;min-height:100vh;display:flex;flex-direction:column;background:#c8e6c9}
+.top-bar{background:var(--green);color:#fff;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:50;box-shadow:0 2px 6px rgba(0,100,0,.3);flex-shrink:0}
+.top-title{font-size:16px;font-weight:700}
+.top-sub{font-size:11px;opacity:.82;margin-top:1px}
+.top-logout{font-size:13px;background:rgba(255,255,255,.18);border:none;color:#fff;padding:5px 10px;border-radius:20px;cursor:pointer;font-family:inherit;font-weight:500}
+.chat{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+.chat::-webkit-scrollbar{width:3px}
+.chat::-webkit-scrollbar-thumb{background:#81c784;border-radius:2px}
+.row{display:flex;gap:9px;align-items:flex-start}
+.row.me{flex-direction:row-reverse}
+.av{width:34px;height:34px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;margin-top:2px}
+.bub{background:#fff;border-radius:4px 14px 14px 14px;padding:12px 14px;font-size:14px;line-height:1.7;box-shadow:0 1px 4px rgba(0,0,0,.08);max-width:85%}
+.bub.me{background:var(--green);color:#fff;border-radius:14px 4px 14px 14px}
+.bub b{font-weight:700}
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;width:100%}
+.card-hd{background:var(--green);color:#fff;padding:11px 15px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+.card-bd{padding:15px}
+.steps{display:flex;gap:5px;justify-content:center;margin-bottom:2px}
+.sd{height:5px;flex:1;border-radius:3px;background:#a5d6a7;transition:background .25s}
+.sd.on{background:var(--green)}
+.fl{display:flex;flex-direction:column;gap:11px}
+.lbl{font-size:12px;color:var(--gray-600);font-weight:500;margin-bottom:4px}
+.fc{width:100%;padding:10px 13px;border:1.5px solid var(--gray-200);border-radius:9px;font-size:14px;font-family:inherit;background:#fff;color:var(--gray-800);outline:none;appearance:none;-webkit-appearance:none;transition:border-color .18s}
+.fc:focus{border-color:var(--green)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sec-lbl{font-size:12px;font-weight:700;color:var(--green);background:var(--green-bg);padding:5px 10px;border-radius:7px;margin-bottom:6px;letter-spacing:.3px}
+.mi{border:2px solid var(--gray-200);border-radius:11px;padding:12px;margin-bottom:8px;transition:all .15s}
+.mi.sel{border-color:var(--green);background:var(--green-pale)}
+.mi.sold{opacity:.4;pointer-events:none}
+.mi-name{font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.sold-tag{background:var(--red-bg);color:var(--red);font-size:11px;padding:2px 7px;border-radius:999px;font-weight:700}
+.limit-tag{background:#fef9c3;color:#854d0e;font-size:11px;padding:2px 7px;border-radius:999px;font-weight:600}
+.rice-row{display:flex;gap:8px;margin-bottom:8px}
+.rb{flex:1;padding:7px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:12px;font-weight:600;background:#fff;cursor:pointer;font-family:inherit;text-align:center;color:var(--gray-600);transition:all .15s}
+.rb.on{border-color:var(--green);background:var(--green-bg);color:#166534}
+.qty-row{display:flex;align-items:center;gap:10px}
+.ql{font-size:12px;color:var(--gray-400)}
+.qb{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--gray-200);background:#fff;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:all .15s;color:var(--gray-600)}
+.qb:active{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.qn{font-size:16px;font-weight:700;min-width:22px;text-align:center}
+.cart{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:12px;margin-top:4px}
+.cart-t{font-size:13px;font-weight:700;color:var(--gray-800);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.cr{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--gray-100);color:var(--gray-800)}
+.cr:last-child{border:none}
+.ct{font-size:13px;font-weight:700;color:var(--green);text-align:right;margin-top:7px}
+.ce{font-size:13px;color:var(--gray-400);text-align:center;padding:8px 0}
+.ci{font-size:13px;color:var(--gray-600);line-height:2.1;margin-bottom:12px;background:var(--gray-50);padding:10px 12px;border-radius:9px}
+.btn{width:100%;padding:13px;border-radius:11px;border:none;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;letter-spacing:.2px}
+.btn:active{transform:scale(.97)}
+.btn-g{background:var(--green);color:#fff}
+.btn-g:hover{background:var(--green-d)}
+.btn-gy{background:var(--gray-100);color:var(--gray-800);border:1px solid var(--gray-200)}
+.btn-gy:hover{background:var(--gray-200)}
+.btn-o{background:var(--orange);color:#fff}
+.btn-o:hover{background:#ea6c0a}
+.brow{display:flex;gap:8px}
+.brow .btn{flex:1}
+.al{padding:10px 13px;border-radius:9px;font-size:13px;display:flex;gap:8px;line-height:1.5}
+.al-r{background:var(--red-bg);border:1px solid #fca5a5;color:#7f1d1d}
+.al-y{background:#fef9c3;border:1px solid #fde68a;color:#713f12}
+.al-g{background:var(--green-bg);border:1px solid #86efac;color:#14532d}
+.suc{text-align:center;padding:20px 10px}
+.suc-ico{font-size:52px;margin-bottom:10px}
+.suc-t{font-size:18px;font-weight:700;margin-bottom:8px}
+.suc-sub{font-size:13px;color:var(--gray-600);line-height:1.9}
+.pcard{border:2px solid var(--gray-200);border-radius:11px;padding:14px;margin-bottom:8px;transition:all .2s}
+.pcard.done{opacity:.4;border-color:var(--gray-200)}
+.pc-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.pc-items{font-size:13px;color:var(--gray-600);line-height:1.9;margin-bottom:10px}
+.rmenu{background:#ddd;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:2px;flex-shrink:0}
+.rmb{background:#fff;border:none;padding:14px 10px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:5px;color:#333;transition:background .15s}
+.rmb:active{background:var(--green-pale)}
+.rmi{font-size:26px}
+.pnl{display:none}
+.pnl.on{display:flex;flex-direction:column;gap:10px}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.bdg-o{background:#fef3c7;color:#92400e}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="top-bar">
+  <div>
+    <div class="top-title">🍱 實習生訂餐系統</div>
+    <div class="top-sub" id="bar-sub">尚未登入</div>
+  </div>
+  <button class="top-logout" id="logout-btn" onclick="doLogout()" style="display:none">登出</button>
+</div>
+
+<div class="chat" id="chat">
+
+  <div id="pnl-login" class="pnl on">
+    <div class="row"><div class="av">🤖</div>
+      <div class="bub">👋 歡迎！請輸入員編登入。<br><small style="opacity:.75">格式：V0XXXX 或 Y0XXXX</small></div>
+    </div>
+    <div class="card">
+      <div class="card-hd">🔑 員編登入</div>
+      <div class="card-bd fl">
+        <div>
+          <div class="lbl">員編</div>
+          <input class="fc" id="inp-emp" placeholder="例：V08123" maxlength="10"
+            oninput="this.value=this.value.toUpperCase()"
+            onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <div id="login-err"></div>
+        <button class="btn btn-g" onclick="doLogin()">登入 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pnl-home" class="pnl">
+    <div class="row"><div class="av">🤖</div>
+      <div class="bub" id="welcome-msg">您好！請選擇下方功能。</div>
+    </div>
+  </div>
+
+  <div id="pnl-s1" class="pnl">
+    <div class="steps"><div class="sd on"></div><div class="sd"></div><div class="sd"></div></div>
+    <div class="row"><div class="av">🤖</div><div class="bub">請選擇<b>日期</b>、餐別與地點：</div></div>
+    <div class="card">
+      <div class="card-hd">📅 步驟 1 — 基本設定</div>
+      <div class="card-bd fl">
+        <div>
+          <div class="lbl">取餐日期</div>
+          <select class="fc" id="sel-date"></select>
+        </div>
+        <div class="row2">
+          <div><div class="lbl">餐別</div>
+            <select class="fc" id="sel-type">
+              <option value="lunch">午餐</option>
+              <option value="dinner">晚餐</option>
+            </select>
+          </div>
+          <div><div class="lbl">取餐地點</div>
+            <select class="fc" id="sel-loc">
+              <option value="douliou">斗六院區</option>
+              <option value="huwei">虎尾院區</option>
+            </select>
+          </div>
+        </div>
+        <div id="s1-msg"></div>
+        <button class="btn btn-g" onclick="goS2()">下一步 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pnl-s2" class="pnl">
+    <div class="steps"><div class="sd on"></div><div class="sd on"></div><div class="sd"></div></div>
+    <div class="row"><div class="av">🤖</div><div class="bub">請選擇<b>餐點</b>及數量：</div></div>
+    <div class="card">
+      <div class="card-hd">🍽️ 步驟 2 — 選擇餐點</div>
+      <div class="card-bd">
+        <div id="meal-list"></div>
+        <div class="cart">
+          <div class="cart-t">🛒 訂單明細 <span id="cart-bdg" class="badge bdg-o" style="display:none"></span></div>
+          <div id="cart-rows"><div class="ce">尚未選擇餐點</div></div>
+          <div id="cart-tot" class="ct" style="display:none"></div>
+        </div>
+        <div class="brow" style="margin-top:10px">
+          <button class="btn btn-gy" onclick="goS1()">← 返回</button>
+          <button class="btn btn-o" onclick="goS3()">確認訂單 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pnl-s3" class="pnl">
+    <div class="steps"><div class="sd on"></div><div class="sd on"></div><div class="sd on"></div></div>
+    <div class="row"><div class="av">🤖</div><div class="bub">請確認後送出：</div></div>
+    <div class="card">
+      <div class="card-hd">✅ 步驟 3 — 確認送出</div>
+      <div class="card-bd">
+        <div id="conf-info" class="ci"></div>
+        <div id="conf-items"></div>
+        <div style="margin-top:12px" class="fl">
+          <button class="btn btn-g" id="submit-btn" onclick="submitOrder()">✅ 確認送出訂單</button>
+          <button class="btn btn-gy" onclick="goS2()">← 修改餐點</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pnl-ok" class="pnl">
+    <div class="card">
+      <div class="card-bd suc">
+        <div class="suc-ico">🎉</div>
+        <div class="suc-t">訂單已送出！</div>
+        <div id="ok-detail" class="suc-sub"></div>
+      </div>
+    </div>
+    <button class="btn btn-gy" onclick="resetOrder()">📝 重新訂餐 / 修改</button>
+  </div>
+
+  <div id="pnl-pickup" class="pnl">
+    <div class="row"><div class="av">🤖</div><div class="bub">您今日的訂餐如下：</div></div>
+    <div id="my-orders-list"></div>
+    <div id="pickup-empty" style="display:none">
+      <div class="card"><div class="card-bd" style="text-align:center;color:var(--gray-400);padding:24px">今日尚無訂餐記錄</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="rmenu">
+  <button class="rmb" onclick="showOrder()"><span class="rmi">🍱</span>我要訂餐</button>
+  <button class="rmb" onclick="showPickup()"><span class="rmi">🧺</span>我要取餐</button>
+</div>
+
+</div>
+
+<script>
+/* ── API helper ─────────────────────────────────────────────── */
+async function apiFetch(method, path, body) {
+  const headers = {'Content-Type': 'application/json'};
+  const tok = sessionStorage.getItem('meal_token');
+  if (tok) headers['Authorization'] = 'Bearer ' + tok;
+  const res = await fetch(path, {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw Object.assign(new Error(data.error || res.statusText), {status: res.status});
+  return data;
+}
+
+/* ── State ── */
+let currentUser = JSON.parse(sessionStorage.getItem('meal_user') || 'null');
+let DB = {menus: {}, orders: {}};
+let cart = [], orderForm = {};
+
+/* ── Helpers ── */
+const $ = id => document.getElementById(id);
+function dishLbl(d){ return {main1:'主菜一',main2:'主菜二',veg:'素食',dinner:'晚餐'}[d]||d; }
+function riceLbl(r){ return r==='white'?'白飯':'養生飯'; }
+function locLbl(l){ return l==='douliou'?'斗六院區':'虎尾院區'; }
+function typeLbl(t){ return t==='lunch'?'午餐':'晚餐'; }
+function fmtD(d){ return d?d.replace(/-/g,'/'):''; }
+function isClosed(dateStr){ return new Date() >= new Date(dateStr+'T09:00:00'); }
+function getMenu(d){ return DB.menus[d]; }
+
+function showOnly(id){
+  ['pnl-login','pnl-home','pnl-s1','pnl-s2','pnl-s3','pnl-ok','pnl-pickup']
+    .forEach(p=>{ const el=$(p); if(el) el.className='pnl'+(p===id?' on':''); });
+  $('chat').scrollTo(0, 0);
+}
+
+function toast(msg, type='g'){
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:76px;left:50%;transform:translateX(-50%);
+    background:${type==='r'?'#dc2626':'#06C755'};color:#fff;
+    padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;
+    box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:999;white-space:nowrap`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2400);
+}
+
+function setMsg(id, msg, type='y'){
+  const el=$(id); if(!el) return;
+  el.innerHTML = msg ? `<div class="al al-${type}">${msg}</div>` : '';
+}
+
+function getTodayMenuDate(){
+  const today = new Date().toISOString().slice(0, 10);
+  const keys = Object.keys(DB.menus).sort();
+  return keys.includes(today) ? today : (keys[keys.length-1] || today);
+}
+
+/* ── Init ── */
+async function initDB(){
+  try {
+    const menus = await apiFetch('GET', '/api/menus');
+    DB.menus = {};
+    menus.forEach(m => {
+      DB.menus[m.date] = {
+        main1: m.main1, main2: m.main2, veg: m.veg, dinner: m.dinner,
+        main1Limit: m.main1_limit, holiday: m.holiday,
+      };
+    });
+    populateDateSelect();
+    if (currentUser) {
+      $('bar-sub').textContent = currentUser.name + '（' + currentUser.emp + '）';
+      $('logout-btn').style.display = 'block';
+      showOnly('pnl-home');
+      $('welcome-msg').textContent = `您好，${currentUser.name}！請選擇下方功能 👇`;
+    }
+  } catch(e) {
+    toast('載入菜單失敗：' + e.message, 'r');
+  }
+}
+
+/* ── Auth ── */
+async function doLogin(){
+  const emp = $('inp-emp').value.trim().toUpperCase();
+  if(!emp){ setMsg('login-err','請輸入員編','r'); return; }
+  try {
+    const res = await apiFetch('POST', '/api/auth/staff-login', {emp});
+    sessionStorage.setItem('meal_token', res.token);
+    sessionStorage.setItem('meal_user',  JSON.stringify(res.user));
+    currentUser = res.user;
+    $('bar-sub').textContent = currentUser.name + '（' + currentUser.emp + '）';
+    $('logout-btn').style.display = 'block';
+    setMsg('login-err', '');
+    showOnly('pnl-home');
+    $('welcome-msg').textContent = `您好，${currentUser.name}！請選擇下方功能 👇`;
+  } catch(e) {
+    setMsg('login-err', e.message, 'r');
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('meal_token');
+  sessionStorage.removeItem('meal_user');
+  currentUser = null; cart = []; orderForm = {};
+  $('bar-sub').textContent = '尚未登入';
+  $('logout-btn').style.display = 'none';
+  $('inp-emp').value = '';
+  showOnly('pnl-login');
+}
+
+function requireLogin(){
+  if(!currentUser){ toast('請先登入','r'); showOnly('pnl-login'); return false; }
+  return true;
+}
+
+/* ── Date select ── */
+function populateDateSelect(){
+  const sel = $('sel-date'); if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">請選擇日期</option>';
+  Object.keys(DB.menus).sort().forEach(d => {
+    const m = DB.menus[d];
+    const closed = isClosed(d);
+    const tag = m.holiday ? '（假日不供餐）' : closed ? '（已截止）' : '';
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = fmtD(d) + ' ' + tag;
+    if(m.holiday || closed) opt.disabled = true;
+    if(d === cur) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+/* ── Step 1 → 2 ── */
+function showOrder(){ if(!requireLogin()) return; populateDateSelect(); showOnly('pnl-s1'); }
+function goS1(){ showOnly('pnl-s1'); }
+
+async function goS2(){
+  const date     = $('sel-date').value;
+  const mealType = $('sel-type').value;
+  const loc      = $('sel-loc').value;
+  if(!date){ setMsg('s1-msg','⚠️ 請選擇取餐日期','r'); return; }
+  const menu = getMenu(date);
+  if(!menu)         { setMsg('s1-msg','⚠️ 此日期無菜單','r'); return; }
+  if(menu.holiday)  { setMsg('s1-msg','⚠️ 此日為假日，不供餐','r'); return; }
+  if(isClosed(date)){ setMsg('s1-msg','🔒 本日訂餐已截止（截止時間：早上 09:00）','r'); return; }
+  setMsg('s1-msg', '');
+
+  // 取主菜一目前訂購數（公開端點，不需 token）
+  let m1count = 0;
+  try {
+    const counts = await apiFetch('GET', `/api/orders/dish-count?date=${date}`);
+    m1count = counts.main1 || 0;
+  } catch { /* 不影響主流程 */ }
+
+  orderForm = {date, mealType, loc, menu, m1count};
+  cart = [];
+  renderMealList();
+  renderCart();
+  showOnly('pnl-s2');
+}
+
+function goS3(){
+  if(!cart.length){ toast('請先選擇至少一樣餐點','r'); return; }
+  renderConfirm();
+  showOnly('pnl-s3');
+}
+
+/* ── Step 2: meal list ── */
+function renderMealList(){
+  const {date, mealType, menu, m1count=0} = orderForm;
+  const m1limit = menu.main1Limit || 80;
+  const m1sold  = m1count >= m1limit;
+
+  const dishes = mealType === 'dinner'
+    ? [{key:'dinner', name:menu.dinner}]
+    : [
+        {key:'main1', name:menu.main1, limit:m1limit, count:m1count, sold:m1sold},
+        {key:'main2', name:menu.main2},
+        {key:'veg',   name:menu.veg},
+      ];
+
+  let html = '';
+  dishes.forEach(d => {
+    const ci   = cart.find(c => c.dish === d.key);
+    const qty  = ci ? ci.qty : 0;
+    const rice = ci ? ci.rice : 'white';
+    const limitTag = d.limit ? `<span class="limit-tag">限額 ${d.limit} 份，已訂 ${d.count}</span>` : '';
+    const soldTag  = d.sold  ? '<span class="sold-tag">已售完</span>' : '';
+    html += `
+    <div class="sec-lbl">${dishLbl(d.key)}</div>
+    <div class="mi ${qty>0?'sel':''} ${d.sold?'sold':''}" id="mi-${d.key}">
+      <div class="mi-name">${d.name} ${soldTag}${limitTag}</div>
+      <div class="rice-row">
+        <button class="rb ${rice==='white'?'on':''}"  onclick="setRice('${d.key}','white')">白飯</button>
+        <button class="rb ${rice==='health'?'on':''}" onclick="setRice('${d.key}','health')">養生飯</button>
+      </div>
+      <div class="qty-row">
+        <span class="ql">數量：</span>
+        <button class="qb" onclick="chgQty('${d.key}',-1,'${d.name}')">−</button>
+        <span class="qn" id="qn-${d.key}">${qty}</span>
+        <button class="qb" onclick="chgQty('${d.key}',1,'${d.name}')">＋</button>
+      </div>
+    </div>`;
+  });
+  $('meal-list').innerHTML = html;
+}
+
+function setRice(dish, r){
+  const ci = cart.find(c => c.dish === dish);
+  if(ci) ci.rice = r;
+  const mi = document.getElementById('mi-'+dish);
+  if(mi) mi.querySelectorAll('.rb').forEach(b => {
+    b.classList.toggle('on', (r==='white'&&b.textContent==='白飯')||(r==='health'&&b.textContent==='養生飯'));
+  });
+}
+
+function chgQty(dish, delta, name){
+  let ci = cart.find(c => c.dish === dish);
+  if(!ci){ if(delta <= 0) return; ci = {dish, name, rice:'white', qty:0}; cart.push(ci); }
+  ci.qty = Math.max(0, ci.qty + delta);
+  if(ci.qty === 0) cart = cart.filter(c => c.dish !== dish);
+  const qel = $('qn-'+dish); if(qel) qel.textContent = ci.qty;
+  const mi  = $('mi-'+dish); if(mi) mi.classList.toggle('sel', ci.qty > 0);
+  renderCart();
+}
+
+function renderCart(){
+  const rows = $('cart-rows'), tot = $('cart-tot'), bdg = $('cart-bdg');
+  if(!cart.length){ rows.innerHTML='<div class="ce">尚未選擇餐點</div>'; tot.style.display='none'; bdg.style.display='none'; return; }
+  const total = cart.reduce((s,c) => s+c.qty, 0);
+  bdg.textContent = total + ' 份'; bdg.style.display = 'inline-block';
+  rows.innerHTML = cart.map(c=>`<div class="cr"><span>${c.name}（${riceLbl(c.rice)}）</span><span><b>${c.qty}</b> 份</span></div>`).join('');
+  tot.textContent = '合計：' + total + ' 份'; tot.style.display = 'block';
+}
+
+function renderConfirm(){
+  const {date, mealType, loc} = orderForm;
+  $('conf-info').innerHTML = `📅 ${fmtD(date)}　🍽️ ${typeLbl(mealType)}　📍 ${locLbl(loc)}`;
+  $('conf-items').innerHTML = cart.map(c=>`<div class="cr"><span>${c.name}（${riceLbl(c.rice)}）</span><span><b>${c.qty}</b> 份</span></div>`).join('');
+}
+
+/* ── Submit ── */
+async function submitOrder(){
+  const {date, mealType, loc} = orderForm;
+  const btn = $('submit-btn');
+  btn.disabled = true; btn.textContent = '送出中…';
+
+  try {
+    for(const c of cart){
+      await apiFetch('POST', '/api/orders', {
+        date, mealType, loc, dish: c.dish, rice: c.rice, qty: c.qty,
+      });
+    }
+    const items = cart.map(c=>`${c.name}（${riceLbl(c.rice)}）× ${c.qty}`).join('<br>');
+    $('ok-detail').innerHTML = `📅 ${fmtD(date)}　${typeLbl(mealType)}<br>📍 ${locLbl(loc)}<br>${items}`;
+    cart = [];
+    showOnly('pnl-ok');
+    toast('訂單送出成功！');
+  } catch(e) {
+    toast('送出失敗：' + e.message, 'r');
+  } finally {
+    btn.disabled = false; btn.textContent = '✅ 確認送出訂單';
+  }
+}
+
+function resetOrder(){ cart = []; orderForm = {}; showOnly('pnl-s1'); populateDateSelect(); }
+
+/* ── My Pickup ── */
+function showPickup(){
+  if(!requireLogin()) return;
+  renderMyPickup();
+  showOnly('pnl-pickup');
+}
+
+async function renderMyPickup(){
+  const todayStr = getTodayMenuDate();
+  try {
+    const ords = await apiFetch('GET', `/api/orders?date=${todayStr}`);
+    // convert to object for compatibility
+    DB.orders = {};
+    ords.forEach(o => { DB.orders[o.id] = {...o, mealType: o.meal_type}; });
+  } catch { /* keep empty */ }
+
+  const myOrds = Object.values(DB.orders).filter(o => o.emp === currentUser.emp);
+  const list = $('my-orders-list'), empty = $('pickup-empty');
+  if(!myOrds.length){ list.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  const merged = {};
+  myOrds.forEach(o => {
+    const k = o.dish + '-' + o.rice;
+    if(!merged[k]) merged[k] = {...o};
+    else merged[k].qty += o.qty;
+  });
+  list.innerHTML = Object.values(merged).map(o=>`
+    <div class="pcard ${o.status==='done'?'done':''}" id="pc-${o.id}">
+      <div class="pc-name">${dishLbl(o.dish)} — ${o.name}</div>
+      <div class="pc-items">${riceLbl(o.rice)} × ${o.qty} 份　📍 ${locLbl(o.loc)}</div>
+      <button class="btn ${o.status==='done'?'btn-gy':'btn-g'}" ${o.status==='done'?'disabled':''} onclick="doMyPickup('${o.id}')">
+        ${o.status==='done'?'✅ 已領取':'🙋 確認領取'}
+      </button>
+    </div>`).join('');
+}
+
+async function doMyPickup(id){
+  try {
+    await apiFetch('PATCH', `/api/orders/${id}/status`, {status:'done'});
+    toast('已確認領取！');
+    setTimeout(renderMyPickup, 300);
+  } catch(e) {
+    toast('更新失敗：' + e.message, 'r');
+  }
+}
+
+/* ── Boot ── */
+initDB();
+</script>
+</body>
+</html>
